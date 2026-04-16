@@ -9,15 +9,16 @@ Feed URL: https://consonant1999.github.io/pod-library/feed.xml
 ```
 pod-library/
 ├── feed.xml              RSS feed(Apple Podcasts 讀這個)
-├── cover.jpg             1400×1400 封面(要自己放)
-├── episodes/             mp3 檔
+├── cover.jpg             1400×1400 封面
 ├── scripts/
-│   └── publish-rss.js    發布新集數
+│   └── publish-rss.js    發布新集數(用 GitHub Releases 儲存音檔)
 └── prompts/
     ├── notebooklm-prompt.md    方案 A:NotebookLM Customize 提示
     ├── prompt-digest.md        方案 B:書籍好理解重寫
     └── prompt-script.md        方案 B:雙人對談腳本
 ```
+
+**音檔存哪**:每集發一個 [GitHub Release](https://github.com/consonant1999/pod-library/releases),音檔當 asset 掛著(2GB/檔上限)。這樣 repo 本體永遠只有文字,不會因為累積音檔而變大。
 
 ## 產一集的完整流程(方案 A)
 
@@ -29,19 +30,20 @@ pod-library/
 
 ```bash
 node ~/pod-library/scripts/publish-rss.js \
-  ~/Downloads/audio.mp3 \
+  ~/Downloads/audio.m4a \
   --title "原子習慣 - 習慣疊加的關鍵" \
   --desc "James Clear 的 3 個反直覺觀點 + 台灣上班族的實踐路徑"
 ```
 
-mp3 會自動搬進 `episodes/`、更新 `feed.xml`、git push。1-2 分鐘後 Apple Podcasts 抓到。
+Script 會:用 `gh release create` 建 release + 上傳音檔 → 更新 `feed.xml` → git push。1-2 分鐘後 Apple Podcasts 抓到。支援 `.mp3 .m4a .mp4 .aac`。
 
 ## 一次性設定(如果 fresh clone)
 
 1. `brew install ffmpeg`(抓 duration 用)
-2. 放一張 `cover.jpg`(1400×1400)在 repo root
-3. GitHub Pages 要開啟:Settings → Pages → Source: main / root
-4. Apple Podcasts → Library → 「⋯」→ Add a Show by URL → 貼 feed URL
+2. `gh auth login`(發 release 用)
+3. 放一張 `cover.jpg`(1400×1400)在 repo root
+4. GitHub Pages 要開啟:Settings → Pages → Source: main / root
+5. Apple Podcasts → Library → 「⋯」→ Add a Show by URL → 貼 feed URL
 
 ## 方案 A vs B
 
