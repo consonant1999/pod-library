@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * publish-rss.js — 發布音檔到 podcast RSS (GitHub Releases 版)
+ * publish-rss.js — 發布音檔到 podcast RSS
  *
  * 用法:
  *   node scripts/publish-rss.js <audio-path> --title "集名" --desc "描述" [--duration 秒數]
@@ -8,10 +8,14 @@
  * 支援副檔名:.mp3, .m4a, .mp4, .aac
  *
  * 流程:
- *   1. gh release create → 上傳音檔為 release asset(tag = date-slug)
- *   2. 抓 asset 下載 URL
- *   3. 更新 feed.xml(插新 <item>, 正確 mime type)
- *   4. git add feed.xml → commit → push
+ *   1. 複製音檔到 repo/episodes/(檔名 = YYYY-MM-DD-ascii-slug.ext)
+ *   2. 更新 feed.xml(插新 <item>, 正確 mime type)
+ *   3. git add + commit + push(含音檔)
+ *
+ * 為何不用 GitHub Releases:
+ *   Releases 的下載 URL 會 302 到 signed Azure blob,Content-Type=octet-stream +
+ *   Content-Disposition=attachment,Apple Podcasts 不吃,無法串流播放。
+ *   GitHub Pages 依副檔名回傳正確 audio/mp4,才能正常播。
  */
 
 const fs = require('fs');
@@ -19,8 +23,7 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 
 const REPO_DIR = path.resolve(__dirname, '..');
-const REPO_SLUG = 'consonant1999/pod-library';
-const FEED_URL = 'https://consonant1999.github.io/pod-library/feed.xml';
+const BASE_URL = 'https://consonant1999.github.io/pod-library';
 const INSERT_MARKER = '<!-- EPISODES_INSERT_HERE -->';
 
 const MIME_MAP = {
@@ -81,7 +84,6 @@ function rfc2822(d = new Date()) {
 }
 
 function slugifyAscii(s) {
-  // Git tag: ASCII only (Chinese chars cause URL/ref issues)
   return s.toLowerCase()
     .replace(/[^\x00-\x7F]/g, '')
     .replace(/[^\w-]+/g, '-')
@@ -92,10 +94,6 @@ function slugifyAscii(s) {
 
 function gitRun(args, cwd) {
   execFileSync('git', args, { cwd, stdio: 'inherit' });
-}
-
-function ghRun(args, opts = {}) {
-  return execFileSync('gh', args, { encoding: 'utf8', ...opts });
 }
 
 function main() {
@@ -137,32 +135,23 @@ function main() {
   const date = new Date();
   const dateStr = date.toISOString().slice(0, 10);
   const asciiSlug = slugifyAscii(title) || 'ep';
-  const tag = `${dateStr}-${asciiSlug}`;
-  const size = fs.statSync(audioSrc).size;
+  const filename = `${dateStr}-${asciiSlug}${ext}`;
+  const episodesDir = path.join(REPO_DIR, 'episodes');
+  const audioDst = path.join(episodesDir, filename);
 
-  console.log(`[1/3] 建 release + 上傳 asset(${(size/1024/1024).toFixed(1)} MB,tag: ${tag})...`);
-  ghRun([
-    'release', 'create', tag, audioSrc,
-    '--repo', REPO_SLUG,
-    '--title', title,
-    '--notes', desc,
-  ], { stdio: 'inherit' });
+  fs.mkdirSync(episodesDir, { recursive: true });
 
-  console.log('[2/3] 抓 asset 下載 URL...');
-  const releaseJson = ghRun([
-    'release', 'view', tag,
-    '--repo', REPO_SLUG,
-    '--json', 'assets',
-  ]);
-  const { assets } = JSON.parse(releaseJson);
-  if (!assets || !assets.length) {
-    console.error('[error] release 建立了但找不到 asset');
-    process.exit(1);
+  if (path.resolve(audioSrc) !== path.resolve(audioDst)) {
+    fs.copyFileSync(audioSrc, audioDst);
+    console.log(`[1/3] 複製音檔 → episodes/${filename}`);
+  } else {
+    console.log(`[1/3] 音檔已在 episodes/${filename}`);
   }
-  const audioUrl = assets[0].url;
-  console.log(`      ${audioUrl}`);
+  const size = fs.statSync(audioDst).size;
+  console.log(`      大小:${(size/1024/1024).toFixed(1)} MB,mime: ${mime}`);
 
-  const guid = `${REPO_SLUG}#${tag}`;
+  const audioUrl = `${BASE_URL}/episodes/${encodeURIComponent(filename)}`;
+  const guid = `${BASE_URL}/episodes/${filename}`;
 
   const item = `    <item>
       <title>${escapeXml(title)}</title>
@@ -183,15 +172,16 @@ function main() {
   }
   feed = feed.replace(INSERT_MARKER, item);
   fs.writeFileSync(feedPath, feed);
+  console.log('[2/3] 更新 feed.xml');
 
-  console.log('[3/3] commit + push feed.xml...');
+  console.log('[3/3] commit + push(含音檔,可能要 10-30 秒)...');
   try {
-    gitRun(['add', 'feed.xml'], REPO_DIR);
+    gitRun(['add', '.'], REPO_DIR);
     gitRun(['commit', '-m', `add: ${title}`], REPO_DIR);
     gitRun(['push'], REPO_DIR);
-    console.log('\n[ok] 完成。1-2 分鐘後 Apple Podcasts 會抓到。');
-    console.log(`[info] feed:    ${FEED_URL}`);
-    console.log(`[info] release: https://github.com/${REPO_SLUG}/releases/tag/${encodeURIComponent(tag)}`);
+    console.log(`\n[ok] 完成。1-2 分鐘後 Apple Podcasts 會抓到。`);
+    console.log(`[info] feed:  ${BASE_URL}/feed.xml`);
+    console.log(`[info] audio: ${audioUrl}`);
   } catch (e) {
     console.error('[error] git 操作失敗:', e.message);
     process.exit(1);

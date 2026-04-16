@@ -18,7 +18,7 @@ pod-library/
     └── prompt-script.md        方案 B:雙人對談腳本
 ```
 
-**音檔存哪**:每集發一個 [GitHub Release](https://github.com/consonant1999/pod-library/releases),音檔當 asset 掛著(2GB/檔上限)。這樣 repo 本體永遠只有文字,不會因為累積音檔而變大。
+**音檔存哪**:直接放 `episodes/` 資料夾,靠 GitHub Pages serve。Apple Podcasts 需要正確的 `Content-Type: audio/mp4` 才能串流,GitHub Releases 會回傳 `attachment` header 導致無法播放。代價是 repo 會長大,~25 集撞到 1GB soft limit,屆時再遷到 R2。
 
 ## 產一集的完整流程(方案 A)
 
