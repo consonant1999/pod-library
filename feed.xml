@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+     xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
+     xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Jason 的學習筆記 Podcast</title>
+    <link>https://consonant1999.github.io/pod-library/</link>
+    <description>書與講義的讀後感,AI 雙人對談,運動時聽。</description>
+    <language>zh-TW</language>
+    <copyright>© 2026 Jason</copyright>
+    <itunes:author>Jason</itunes:author>
+    <itunes:summary>書與講義的讀後感,AI 雙人對談,運動時聽。</itunes:summary>
+    <itunes:owner>
+      <itunes:name>Jason</itunes:name>
+      <itunes:email>consonant1999@gmail.com</itunes:email>
+    </itunes:owner>
+    <itunes:category text="Education">
+      <itunes:category text="Self-Improvement"/>
+    </itunes:category>
+    <itunes:image href="https://consonant1999.github.io/pod-library/cover.jpg"/>
+    <itunes:explicit>false</itunes:explicit>
+    <itunes:type>episodic</itunes:type>
+    <!-- EPISODES_INSERT_HERE -->
+  </channel>
+</rss>
