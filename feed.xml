@@ -20,6 +20,16 @@
     <itunes:image href="https://consonant1999.github.io/pod-library/cover.jpg"/>
     <itunes:explicit>false</itunes:explicit>
     <itunes:type>episodic</itunes:type>
+        <item>
+      <title>EP01 · System Design 入門 — 300 毫秒的接力賽</title>
+      <description>用架構前導目錄(從 ByteByteGo System Design 摘重點)</description>
+      <pubDate>Thu, 16 Apr 2026 17:36:17 GMT</pubDate>
+      <guid isPermaLink="false">consonant1999/pod-library#2026-04-16-ep01-system-design-300</guid>
+      <enclosure url="https://github.com/consonant1999/pod-library/releases/download/2026-04-16-ep01-system-design-300/300_.m4a" length="42296223" type="audio/mp4"/>
+      <itunes:duration>00:21:54</itunes:duration>
+      <itunes:explicit>false</itunes:explicit>
+      <itunes:episodeType>full</itunes:episodeType>
+    </item>
     <!-- EPISODES_INSERT_HERE -->
   </channel>
 </rss>
